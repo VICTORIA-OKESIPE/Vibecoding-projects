@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐍 Python Trivia Quest</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        .game-font { font-family: 'Press Start 2P', cursive; }
+        .option-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .option-card:hover {
+            transform: translateY(-5px);
+        }
+        .score-animation {
+            animation: scorePopup 0.5s ease-out;
+        }
+        @keyframes scorePopup {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen text-white py-8 px-4">
+    <!-- Start Screen -->
+    <div id="startScreen" class="container mx-auto max-w-2xl text-center">
+        <h1 class="game-font text-4xl mb-8 text-yellow-300">Python Trivia Quest</h1>
+        <div class="bg-white bg-opacity-10 rounded-xl p-8 backdrop-filter backdrop-blur-lg">
+            <p class="mb-6 text-xl">Ready to test your Python knowledge? 🚀</p>
+            <input type="text" id="playerName" placeholder="Enter your name" 
+                class="w-full max-w-md mx-auto bg-white bg-opacity-20 border-2 border-blue-400 rounded-lg p-3 text-center text-xl mb-6 focus:outline-none focus:border-yellow-300">
+            <button onclick="startGame()" class="game-font bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl transition transform hover:scale-105">
+                START QUEST! 🎮
+            </button>
+        </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" class="container mx-auto max-w-2xl hidden">
+        <!-- Progress -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="game-font text-yellow-300">Level: <span id="questionNumber">1</span>/5</div>
+            <div class="game-font text-yellow-300">Score: <span id="score">0</span> 🌟</div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="w-full bg-white bg-opacity-20 rounded-full h-4 mb-8">
+            <div id="progressBar" class="progress-bar bg-yellow-400 h-4 rounded-full" style="width: 0%"></div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="bg-white bg-opacity-10 rounded-xl p-8 backdrop-filter backdrop-blur-lg mb-8">
+            <h2 id="question" class="text-2xl mb-8 text-center"></h2>
+            <div id="options" class="grid grid-cols-1 gap-4"></div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="resultsScreen" class="container mx-auto max-w-2xl text-center hidden">
+        <h1 class="game-font text-4xl mb-8 text-yellow-300">Quest Complete! 🏆</h1>
+        <div class="bg-white bg-opacity-10 rounded-xl p-8 backdrop-filter backdrop-blur-lg">
+            <div id="finalScore" class="text-3xl mb-6"></div>
+            <div id="feedback" class="text-xl mb-8"></div>
+            <button onclick="restartGame()" class="game-font bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl transition transform hover:scale-105">
+                Play Again! 🔄
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Sound effects
+        const sounds = {
+            click: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3'),
+            correct: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
+            wrong: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3'),
+            gameStart: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3'),
+            complete: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3'),
+            hover: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3')
+        };
+
+        // Preload sounds
+        Object.values(sounds).forEach(sound => {
+            sound.load();
+            sound.volume = 0.5;
+        });
+
+        const questions = [
+            {
+                question: "What symbol is used for comments in Python? 🤔",
+                options: ["//", "/* */", "#", "%%"],
+                correct: 2,
+                explanation: "In Python, we use # for single-line comments!"
+            },
+            {
+                question: "Which of these is a valid variable name in Python? 🐍",
+                options: ["2myvar", "my-var", "my_var", "for"],
+                correct: 2,
+                explanation: "my_var is valid! Variable names can't start with numbers or contain special characters (except _)."
+            },
+            {
+                question: "What will print('Hello ' + 'World') output? 🖨️",
+                options: ["HelloWorld", "Hello World", "Error: Invalid Syntax", "Hello+World"],
+                correct: 1,
+                explanation: "The + operator concatenates strings with the space preserved!"
+            },
+            {
+                question: "Which is the correct way to create a list in Python? 📝",
+                options: ["list = {1, 2, 3}", "list = (1, 2, 3)", "list = [1, 2, 3]", "list = <1, 2, 3>"],
+                correct: 2,
+                explanation: "Lists in Python are created using square brackets []!"
+            },
+            {
+                question: "What is the output of: print(type(42))? 🔢",
+                options: ["integer", "int", "<class 'int'>", "number"],
+                correct: 2,
+                explanation: "type() shows the class name in this format: <class 'type_name'>"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let playerName = "";
+
+        function startGame() {
+            playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                alert("Please enter your name to start the quest! 👋");
+                return;
+            }
+            sounds.gameStart.play();
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = currentQuestion + 1;
+            document.getElementById('question').textContent = q.question;
+            
+            const optionsHtml = q.options.map((option, index) => `
+                <div class="option-card bg-white bg-opacity-5 hover:bg-opacity-20 p-6 rounded-xl text-center cursor-pointer"
+                     onclick="checkAnswer(${index})"
+                     onmouseover="sounds.hover.play()"
+                     style="min-height: 60px; display: flex; align-items: center; justify-content: center">
+                    ${option}
+                </div>
+            `).join('');
+            
+            document.getElementById('options').innerHTML = optionsHtml;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function checkAnswer(selectedIndex) {
+            const q = questions[currentQuestion];
+            const options = document.querySelectorAll('.option-card');
+            
+            // Prevent multiple answers
+            if (options[0].classList.contains('answered')) return;
+            
+            sounds.click.play();
+            
+            options.forEach((option, index) => {
+                option.classList.add('answered');
+                option.onclick = null;
+                if (index === q.correct) {
+                    option.classList.add('bg-green-500', 'bg-opacity-20');
+                }
+                if (index === selectedIndex && index !== q.correct) {
+                    option.classList.add('bg-red-500', 'bg-opacity-20');
+                }
+            });
+
+            if (selectedIndex === q.correct) {
+                sounds.correct.play();
+                score += 20;
+                document.getElementById('score').classList.add('score-animation');
+                setTimeout(() => {
+                    document.getElementById('score').classList.remove('score-animation');
+                }, 500);
+            } else {
+                sounds.wrong.play();
+            }
+
+            document.getElementById('score').textContent = score;
+
+            // Show explanation
+            const explanation = document.createElement('div');
+            explanation.className = 'mt-6 text-center text-yellow-300';
+            explanation.textContent = q.explanation;
+            document.getElementById('options').appendChild(explanation);
+
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    displayQuestion();
+                } else {
+                    showResults();
+                }
+            }, 2000);
+        }
+
+        function showResults() {
+            sounds.complete.play();
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+            
+            const finalScore = document.getElementById('finalScore');
+            finalScore.textContent = `${playerName}, you scored: ${score}/100 🌟`;
+            
+            const feedback = document.getElementById('feedback');
+            if (score >= 80) {
+                feedback.textContent = "Amazing! You're a Python Pro! 🏆";
+            } else if (score >= 60) {
+                feedback.textContent = "Great job! Keep practicing! 💪";
+            } else {
+                feedback.textContent = "Keep learning! You've got this! 📚";
+            }
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('score').textContent = '0';
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('playerName').value = '';
+        }
+    </script>
+</body>
+</html>
