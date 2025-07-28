@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vibe Coding Lit Review</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Vibe Coding Literature Review</h1>
+    <form id="entryForm">
+      <div class="form-row">
+  <label>Paper Title <input type="text" name="title" required /></label>
+  <label>Full APA Style Citation <input type="text" name="apaCitation" /></label>
+  <label>Year <input type="number" name="year" min="1800" max="2100" /></label>
+<label>Type of Paper
+  <select name="paperType" id="paperTypeSelect" required>
+    <option value="">Select...</option>
+    <option value="Conference">Conference</option>
+    <option value="Journal">Journal</option>
+    <option value="Other">Other</option>
+  </select>
+</label>
+<label>Conference/Journal Name <input type="text" name="venue" /></label>
+</div>
+<div class="form-row">
+  <label>Type of User Investigated
+    <select name="userType" id="userTypeSelect" required>
+      <option value="">Select...</option>
+      <option value="Novice">Novice</option>
+      <option value="Expert">Expert</option>
+      <option value="Other">Other</option>
+    </select>
+    <input type="text" name="userTypeOther" id="userTypeOtherInput" placeholder="Please specify" style="display:none;margin-top:6px;" />
+  </label>
+</div>
+      <div class="form-row">
+        <label>Research Objectives <textarea name="objectives"></textarea></label>
+        <label>Research Questions <textarea name="questions"></textarea></label>
+      </div>
+      <div class="form-row">
+  <label>Constructs Studied <textarea name="constructs"></textarea></label>
+  <label>Theories Used <textarea name="theories"></textarea></label>
+</div>
+<div class="form-row">
+  <label>Experimental Design <textarea name="experimentalDesign"></textarea></label>
+</div>
+      <div class="form-row">
+        <label>Analysis-Related Information <textarea name="analysis"></textarea></label>
+        <label>Research Limitations <textarea name="limitations"></textarea></label>
+      </div>
+      <div class="form-row">
+        <label>Future Research Suggestions <textarea name="future"></textarea></label>
+        <label>Key Findings <textarea name="findings"></textarea></label>
+      </div>
+      <div class="form-row">
+        <label>Notes <textarea name="notes"></textarea></label>
+      </div>
+      <button type="submit">Add Entry</button>
+    </form>
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Search or filter entries..." />
+      <button id="exportBtn">Export as CSV</button>
+<button id="advancedExportBtn" title="Choose folder and filename (if supported)">Advanced Export</button>
+    </div>
+    <div class="history-bar">
+      <span id="entryCount">Entries: 0</span>
+      <span id="historyMsg">Your coded literature will appear below. Edit or delete any entry at any time.</span>
+    </div>
+    <div class="table-container">
+      <table id="entriesTable">
+  <thead>
+    <tr>
+      <th>Paper Title</th>
+      <th>APA Citation</th>
+      <th>Year</th>
+      <th>Type of Paper</th>
+      <th>Venue</th>
+      <th>User Type</th>
+      <th>Objectives</th>
+      <th>Questions</th>
+      <th>Constructs</th>
+      <th>Theories</th>
+      <th>Experimental Design</th>
+      <th>Analysis</th>
+      <th>Limitations</th>
+      <th>Future</th>
+      <th>Findings</th>
+      <th>Notes</th>
+      <th>Edit</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
