@@ -1,4 +1,4 @@
-# Vibe Coded Litera Review App
+# Vibe Coded Literatur Review App
 
 A React-based web app to systematically code and analyze literature for your vibe coding project.
 
